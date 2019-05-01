@@ -31,7 +31,6 @@ oscIN           = osc.OscInterface(9037, brokerIP)
 
 def signal_handler(sig, frame):
         print('You pressed Ctrl+C!')
-        midiTitreur.stop()
         oscIN.stop()
         sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)

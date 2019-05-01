@@ -8,7 +8,7 @@ import liblo
 def callback(path, args, types, src, mqttc):
     # p = json.dumps({"path": path, "args": args})  # JSON payload
     p = "§".join([str(i) for i in args])            # string payload
-    mqttc.publish('k32'+path, payload=p, qos=1, retain=True)
+    mqttc.publish('k32'+path, payload=p, qos=1, retain=False)
     print("OSC:", path, p.replace("§", " "))
 
 
