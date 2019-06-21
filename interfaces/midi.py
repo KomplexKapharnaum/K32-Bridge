@@ -1,34 +1,40 @@
 import rtmidi
 import time
+import json
+
+import paho.mqtt.client as mqtt
 
 #
 # MIDI
 #
 MIDITYPE = {
-                '1000': 'NOTEOFF', 
-                '1001': 'NOTEON',
-                '1010': 'AFTERTOUCH',
-                '1011': 'CC',
-                '1100': 'PC',
-                '1101': 'PRESSURE',
-                '1110': 'PITCHBEND',
-                '1011': 'MODE',
-                '1111': 'SYSCOM'
+                8: 'NOTEOFF', 
+                9: 'NOTEON',
+                10: 'AFTERTOUCH',
+                11: 'CC',
+                12: 'PC',
+                13: 'PRESSURE',
+                14: 'PITCHBEND',
+                15: 'SYSTEM'
             }
 
 MIDISYS = {
-                '0000': 'SYSEX', 
-                '0001': 'MTC',
-                '0010': 'SONGPOS',
-                '0011': 'SONGSEL',
-                '0110': 'TUNE',
-                '0111': 'SYSEXEND',
-                '1000': 'CLOCK',
-                '1010': 'START',
-                '1011': 'CONTINUE',
-                '1100': 'STOP',
-                '1110': 'SENSING',
-                '1111': 'RESET'
+                0: 'SYSEX', 
+                1: 'MTC',
+                2: 'SONGPOS',
+                3: 'SONGSEL',
+                4: 'UNDEFINED1',
+                5: 'UNDEFINED2',
+                6: 'TUNE',
+                7: 'SYSEXEND',
+                8: 'CLOCK',
+                9: 'UNDEFINED3',
+                10: 'START',
+                11: 'CONTINUE',
+                12: 'STOP',
+                13: 'UNDEFINED4',
+                14: 'SENSING',
+                15: 'RESET'
             }
 
 class MidiMessage():
@@ -37,25 +43,30 @@ class MidiMessage():
         mChunk1 = bin(message[0])[2:6]
         mChunk2 = bin(message[0])[6:] 
 
-        self.type = MIDITYPE[mChunk1]
-        if self.type == 'SYSCOM': 
-            self.type = MIDISYS[mChunk2]
-            self.channel = 0
-        else: 
-            self.channel = int(mChunk2, 2)+1
+        self.type = message[0]//16
+        self.channel = message[0]%16
 
         self.values = message[1:]
 
-        # Convert NOTEON velocity O to NOTEOFF
-        if self.type == 'NOTEON' and self.values[1] == 0:
-            self.type == 'NOTEOFF'
+        if self.maintype() == 'NOTEON' and self.values[1] == 0:
+            self.type == 8     # convert to NOTEOFF
 
         # Convert Note Value
-        if self.type == 'NOTEON' or self.type == 'NOTEOFF':
-            self.values[0] += 1     
+        # if self.type == 'NOTEON' or self.type == 'NOTEOFF':
+            # self.values[0] += 1     
     
-    def payload(self):
-        return '-'.join([str(v).zfill(3) for v in self.values])
+    def maintype(self):
+        return MIDITYPE[self.type]
+    
+    def systype(self):
+        return MIDISYS[self.channel]
+
+    def payload_json(self):
+        p = json.dumps({"event": self.type, "values": self.values}, sort_keys=True)
+        return p
+
+    def payload_raw(self):
+        return '-'.join([str(v).zfill(3) for v in self.message[:3] ])
 
 
 
@@ -69,20 +80,26 @@ class MidiToMQTTHandler(object):
         self._wallclock += deltatime
         mm = MidiMessage(msg)
 
-        if mm.type == 'NOTEON': 
-            self._mqttc.publish('midi/c'+str(mm.channel)+'/noteon', payload=mm.payload(), qos=1, retain=True)
-        
-        elif mm.type == 'NOTEOFF':
-            self._mqttc.publish('midi/c'+str(mm.channel)+'/noteoff', payload=mm.payload(), qos=1, retain=True)
-        
-        
-        print(mm.type, mm.channel, mm.values)
+        if mm.maintype() == 'SYSTEM':
+            self._mqttc.publish('midi/sys', payload=mm.payload_raw(), qos=1, retain=True)
+            print(mm.maintype(), mm.systype(), mm.values, mm.payload_raw())
+        else:
+            self._mqttc.publish('midi/c'+str(mm.channel+1), payload=mm.payload_raw(), qos=1, retain=True)
+            print(mm.maintype(), mm.channel, mm.values, mm.payload_raw())
 
 
 class MidiInterface():
-    def __init__(self, name, mqttc):
+    def __init__(self, name, addr):
         self.name = name
+
+        self.mqttc = mqtt.Client()
+        self.mqttc.connect(addr)
+        self.mqttc.loop_start()
+
         self.midiIN = rtmidi.MidiIn()
         self.midiIN.open_virtual_port(name)
-        self.midiIN.set_callback( MidiToMQTTHandler(mqttc), data=None)
-
+        self.midiIN.set_callback( MidiToMQTTHandler(self.mqttc), data=None)
+    
+    def stop(self):
+        self.mqttc.loop_stop(True)
+        del self.midiIN
