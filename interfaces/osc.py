@@ -6,8 +6,8 @@ import liblo
 
 
 def callback(path, args, types, src, mqttc):
-    # p = json.dumps({"path": path, "args": args})
-    p = "§".join([str(i) for i in args])
+    # p = json.dumps({"path": path, "args": args})  # JSON payload
+    p = "§".join([str(i) for i in args])            # string payload
     mqttc.publish('osc'+path, payload=p, qos=1, retain=True)
     print("OSC:", path, p.replace("§", " "))
 

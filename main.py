@@ -2,18 +2,37 @@ from PyQt5 import QtWidgets, uic
 import sys, time, signal
 
 from interfaces import midi
+from interfaces import titreur
+from interfaces import sampler
+from interfaces import leds
 from interfaces import osc
 
 
-#
-# MIDI
-#
-midiIN = midi.MidiInterface("K32-Midi", "localhost")
+print("KTITREUR - Midi Bridge\n")
+
+if len(sys.argv) < 2:
+        print("broker ip missing.. please specify Broker IP")
+        sys.exit(1)
+brokerIP = sys.argv[1]
 
 #
 # MIDI
 #
-oscIN = osc.OscInterface(9037, "localhost")
+midiTitreur     = midi.MidiInterface( "KTitreur", 
+                        titreur.Midi2MQTT( brokerIP , "MidiMapping.xls") )
+
+midiSampler     = midi.MidiInterface("K32-sampler", 
+                        sampler.Midi2MQTT( brokerIP ) )
+
+midiLeds        = midi.MidiInterface("K32-leds", 
+                        leds.Midi2MQTT( brokerIP ) )
+
+# midiLight       = midi.MidiInterface(midi.MQTT_K32light, brokoer)
+
+#
+# OSC
+#
+oscIN           = osc.OscInterface(9037, brokerIP)
 
 #
 # QT INTERFACE
@@ -26,7 +45,7 @@ oscIN = osc.OscInterface(9037, "localhost")
 
 def signal_handler(sig, frame):
         print('You pressed Ctrl+C!')
-        midiIN.stop()
+        midiTitreur.stop()
         oscIN.stop()
         sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
