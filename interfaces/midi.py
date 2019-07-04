@@ -48,7 +48,7 @@ class MidiMessage():
         if self.maintype() == 'NOTEON' and self.values[1] == 0:
             self.type == 8     # convert to NOTEOFF
 
-        print('-- MIDI', self.channel, self.maintype(), self.values)
+        # print('-- MIDI', self.channel, self.maintype(), self.values)
         # Convert Note Value
         # if self.type == 'NOTEON' or self.type == 'NOTEOFF':
             # self.values[0] += 1     
@@ -64,6 +64,12 @@ class MidiMessage():
     
     def payload_midivalues(self):
         return '-'.join([str(v).zfill(3) for v in self.message[:3] ])
+
+    def note_abs(self):
+        return (self.values[0]%12)
+
+    def octave(self):
+        return (self.values[0]//12)-1
 
 
 class MidiInterface():

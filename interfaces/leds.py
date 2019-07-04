@@ -1,6 +1,7 @@
 from interfaces import midi
 import paho.mqtt.client as mqtt
 import time
+import threading
 
 FIXTURE_SIZE = 16
 
@@ -19,6 +20,11 @@ class Midi2MQTT(object):
 
         # Internal state
         self.payload = [ bytearray(FIXTURE_SIZE) ]*16
+
+        # Send thread
+        # self.run = True
+        # self.thread = threading.Thread(target=self.sender)
+        # self.thread.start()
 
     def __call__(self, event, data=None):
         msg, deltatime = event
@@ -42,4 +48,17 @@ class Midi2MQTT(object):
                 self.payload = [ bytearray(FIXTURE_SIZE) ]*16
                 self.mqttc.publish('leds/c'+str(mm.channel+1), payload=self.payload[mm.channel], qos=1, retain=False)
                 print('leds/c'+str(mm.channel+1), list(self.payload[mm.channel]))
+
+
+    def sender(self):
+        while self.run:
+            for c in range(16):
+                self.mqttc.publish('leds/c'+str(c+1), payload=self.payload[c], qos=1, retain=False)
+                print('leds/c'+str(c+1), list(self.payload[c]))
+            time.sleep(0.1)
+    
+
+    def stop(self):
+        self.run = False
+        self.thread.join()
             

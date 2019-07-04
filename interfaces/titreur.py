@@ -2,9 +2,12 @@ import time, signal, sys, os
 import xlrd
 import paho.mqtt.client as mqtt
 from interfaces import midi
+import socketio
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+# DEVICES = ['2.0.11.44', '2.0.11.45', '2.0.11.48', '2.0.11.50', '2.0.11.51', '2.0.11.52']
 
 #
 # TITREUR MODE
@@ -31,14 +34,16 @@ class XlsParser():
     def bank(self, b):
         self.offset = max(1, 16*(b-1)+1)
 
-    def note2txt(self, note):
-        # C1 = 24 // C2 = 36
-        colx = (note//12)-1 
-        rowx = self.offset + (note%12) + 1
-        value = "   ----  "
-        if rowx in range(self.worksheet.nrows):
-            value = self.worksheet.cell_value( rowx, colx )
-        # print('Parser:', value)
+    def note2txt(self, noteabs, octave):
+        value = None
+
+        if octave >= 1:
+            # C1 = 24 // C2 = 36
+            colx = octave
+            rowx = self.offset + noteabs + 1
+            if rowx in range(self.worksheet.nrows):
+                value = self.worksheet.cell_value( rowx, colx )
+            # print('Parser:', value)
         return value
 
     def reload(self):
@@ -64,6 +69,39 @@ class XlsHandler(FileSystemEventHandler):
             self.parser.reload()
 
 
+#
+#  SOCKETIO link
+#
+sioURL = 'https://live.beaucoupbeaucoup.art'
+sio = socketio.Client()
+sio.connect(sioURL)
+
+@sio.on('connect')
+def on_connect():
+    print(f"-- SOCKETIO: connected to online server at {sioURL}")
+    sio.emit('command', 'ok')
+
+
+class Mqtt2Socketio(object):
+    def __init__(self, broker):
+        self.mqttc = mqtt.Client()
+        self.mqttc.connect(broker)
+        self.mqttc.subscribe('titreur/all/#', 1)
+        self.mqttc.subscribe('titreur/8/#', 1)
+        self.mqttc.on_message = self.on_mqtt_msg
+        self.mqttc.loop_start()
+        print(f"-- SOCKETIO: connected to broker at {broker}")
+
+    def on_mqtt_msg(self, client, userdata, message):
+        # print("Received message '" + str(message.payload) + "' on topic '"
+        #     + message.topic + "' with QoS " + str(message.qos))
+        msg = {'topic': '/'.join(message.topic.split('/')[2:]), 'payload': message.payload.decode('utf8', errors='ignore'), 'qos': message.qos}
+        # print(msg)
+        sio.emit('mqtt', msg)
+
+    def stop(self):
+        self.mqttc.loop_stop(True)
+
 
 #
 #  MIDI Handler (PUBLIC)
@@ -76,7 +114,7 @@ class Midi2MQTT(object):
         self.mqttc = mqtt.Client()
         self.mqttc.connect(broker)
         self.mqttc.loop_start()
-        print(f"-- MQTT: connected to broker at {broker}")
+        print(f"-- TITREUR: connected to broker at {broker}")
 
         # XLS Read and Parse
         self.xls = XlsParser(xlspath)
@@ -93,33 +131,36 @@ class Midi2MQTT(object):
         mm = midi.MidiMessage(msg)
 
         if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt( mm.values[0] ) 
-            txt += '§' + getMode(txt)
-            self.mqttc.publish('titreur/add', payload=txt, qos=2, retain=False)
-            print('titreur/add', txt)
+            txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
+            if txt: 
+                txt += '§' + getMode(txt)
+                self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=2, retain=False)
+                print('titreur/'+str(mm.octave())+'/add', txt)
 
         elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt( mm.values[0] ) 
-            txt += '§' + getMode(txt)
-            self.mqttc.publish('titreur/rm', payload=txt, qos=2, retain=False)
-            print('titreur/rm', txt)
+            txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
+            if txt:
+                txt += '§' + getMode(txt)
+                self.mqttc.publish('titreur/'+str(mm.octave())+'/rm', payload=txt, qos=2, retain=False)
+                print('titreur/'+str(mm.octave())+'/rm', txt)
 
         elif mm.maintype() == 'CC':
 
             # CC 14 = ARPPEGIO SPEED
             if mm.values[0] == 12:
-                self.mqttc.publish('titreur/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
-                print('titreur/speed', str(mm.values[1]*10))
+                self.mqttc.publish('titreur/all/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
+                print('titreur/all/speed', str(mm.values[1]*10))
 
             # CC 32 = Bank LSB
             elif mm.values[0] == 32:
                 self.xls.bank(mm.values[1])
                 print('bank', mm.values[1])
                 
-            # else: print(mm.values[0])
-        
-        else:
-            print('MIDI:', mm.maintype(), mm.subtype(), mm.values  )
+            # CC 120 / 123 == ALL OFF
+            if mm.values[0] == 120 or mm.values[0] == 123:
+                self.mqttc.publish('titreur/all/clear', payload="", qos=1, retain=False)
+                print('titreur/all/clear')
+
 
     def stop(self):
         self.mqttc.loop_stop(True)

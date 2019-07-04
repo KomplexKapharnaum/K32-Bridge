@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic
+# from PyQt5 import QtWidgets, uic
 import sys, time, signal
 
 from interfaces import midi
@@ -21,13 +21,13 @@ brokerIP = sys.argv[1]
 midiTitreur     = midi.MidiInterface( "KTitreur", 
                         titreur.Midi2MQTT( brokerIP , "MidiMapping.xls") )
 
+mobileTitreur   = titreur.Mqtt2Socketio( brokerIP )
+
 midiSampler     = midi.MidiInterface("K32-sampler", 
                         sampler.Midi2MQTT( brokerIP ) )
 
 midiLeds        = midi.MidiInterface("K32-leds", 
                         leds.Midi2MQTT( brokerIP ) )
-
-# midiLight       = midi.MidiInterface(midi.MQTT_K32light, brokoer)
 
 #
 # OSC

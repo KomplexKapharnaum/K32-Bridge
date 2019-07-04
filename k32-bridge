@@ -1,10 +1,10 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-printf '\e[3;0;0t'
-printf '\e[8;720;1280t'
-printf '\e[9;1t'
-printf '\e[5t'
+# printf '\e[3;0;0t'
+# printf '\e[8;720;1280t'
+# printf '\e[9;1t'
+# printf '\e[5t'
 clear
 
 
