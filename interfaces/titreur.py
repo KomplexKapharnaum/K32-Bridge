@@ -134,7 +134,7 @@ class Midi2MQTT(object):
             txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
             if txt: 
                 txt += '§' + getMode(txt)
-                self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=2, retain=False)
+                self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=0, retain=False)
                 print('titreur/'+str(mm.octave())+'/add', txt)
 
         elif mm.maintype() == 'NOTEOFF':
