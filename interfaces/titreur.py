@@ -32,7 +32,7 @@ class XlsParser():
         self.bank(1)
 
     def bank(self, b):
-        self.offset = max(1, 16*(b-1)+1)
+        self.offset = max(1, 16*(b)+1)
 
     def note2txt(self, noteabs, octave):
         value = None
@@ -151,8 +151,8 @@ class Midi2MQTT(object):
                 self.mqttc.publish('titreur/all/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
                 print('titreur/all/speed', str(mm.values[1]*10))
 
-            # CC 32 = Bank LSB
-            elif mm.values[0] == 118:
+            # CC 0 = Bank
+            elif mm.values[0] == 0:
                 self.xls.bank(mm.values[1])
                 print('bank', mm.values[1])
                 
