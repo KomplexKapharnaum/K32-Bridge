@@ -40,21 +40,21 @@ class Midi2MQTT(object):
                 note -= 20
             if note >= 0 and note < FIXTURE_SIZE:
                 self.payload[mm.channel][note] = mm.values[1]*2
-                self.mqttc.publish('leds/c'+str(mm.channel+1), payload=self.payload[mm.channel], qos=1, retain=False)
-                print('leds/c'+str(mm.channel+1), list(self.payload[mm.channel]))
+                self.mqttc.publish('k32/c'+str(mm.channel+1)+'/leds', payload=self.payload[mm.channel], qos=1, retain=False)
+                print('k32/c'+str(mm.channel+1)+'/leds', list(self.payload[mm.channel]))
 
             # CC 120 / 123 == ALL OFF
             if mm.maintype() == 'CC' and (mm.values[0] == 120 or mm.values[0] == 123):
                 self.payload = [ bytearray(FIXTURE_SIZE) ]*16
-                self.mqttc.publish('leds/c'+str(mm.channel+1), payload=self.payload[mm.channel], qos=1, retain=False)
-                print('leds/c'+str(mm.channel+1), list(self.payload[mm.channel]))
+                self.mqttc.publish('k32/c'+str(mm.channel+1)+'/leds', payload=self.payload[mm.channel], qos=1, retain=False)
+                print('k32/c'+str(mm.channel+1)+'/leds', list(self.payload[mm.channel]))
 
 
     def sender(self):
         while self.run:
             for c in range(16):
-                self.mqttc.publish('leds/c'+str(c+1), payload=self.payload[c], qos=1, retain=False)
-                print('leds/c'+str(c+1), list(self.payload[c]))
+                self.mqttc.publish('k32/c'+str(c+1)+'/leds', payload=self.payload[c], qos=1, retain=False)
+                print('k32/c'+str(c+1)+'/leds', list(self.payload[c]))
             time.sleep(0.1)
     
 

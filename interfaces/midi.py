@@ -61,9 +61,6 @@ class MidiMessage():
 
     def subtype(self):
         return  self.channel if (self.maintype() != 'SYSTEM') else self.systype()
-    
-    def payload_midivalues(self):
-        return '-'.join([str(v).zfill(3) for v in self.message[:3] ])
 
     def note_abs(self):
         return (self.values[0]%12)

@@ -19,10 +19,7 @@ class Midi2MQTT(object):
         msg, deltatime = event
         self._wallclock += deltatime
         mm = midi.MidiMessage(msg)
+        payload = '-'.join([str(v).zfill(3) for v in self.message[:3] ])
 
-        if mm.maintype() == 'SYSTEM':
-            self.mqttc.publish('sampler/sys', payload=mm.payload_midivalues(), qos=1, retain=False)
-            print('sampler/sys', mm.payload_midivalues(), mm.maintype())
-        else:
-            self.mqttc.publish('sampler/c'+str(mm.channel+1), payload=mm.payload_midivalues(), qos=1, retain=False)
-            print('sampler/c'+str(mm.channel+1), mm.payload_midivalues(), mm.maintype())
+        self.mqttc.publish('k32/c'+str(mm.channel+1)+'/sampler', payload=payload, qos=1, retain=False)
+        print('k32/c'+str(mm.channel+1)+'/sampler', payload, mm.maintype())
