@@ -45,6 +45,8 @@ class MidiMessage():
         self.channel = message[0]%16
         self.values = message[1:]
 
+        print(self.maintype(), self.subtype(), self.values)
+
         if self.maintype() == 'NOTEON' and self.values[1] == 0:
             self.type == 8     # convert to NOTEOFF
 
