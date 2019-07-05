@@ -39,7 +39,8 @@ class XlsParser():
 
         if octave >= 1:
             # C1 = 24 // C2 = 36
-            colx = octave
+            if octave > 0 and octave <= 7: colx = octave
+            elif octave == 0: colx = octave + 8
             rowx = self.offset + noteabs + 1
             if rowx in range(self.worksheet.nrows):
                 value = self.worksheet.cell_value( rowx, colx )
