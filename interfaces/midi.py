@@ -66,7 +66,7 @@ class MidiMessage():
         return (self.values[0]%12)
 
     def octave(self):
-        return (self.values[0]//12)-1
+        return (self.values[0]//12)-2
 
 
 class MidiInterface():
