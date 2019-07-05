@@ -44,10 +44,7 @@ class Midi2MQTT(object):
                     self.payload[mm.channel][note] = 0
                 else: 
                     self.payload[mm.channel][note] = mm.values[1]*2
-                for i in range(16):
-                    print('channel ', i+1, self.payload[i])
                 self.send(mm.channel)
-                print('')
 
             # CC 120 / 123 == ALL OFF
             if mm.maintype() == 'CC' and (mm.values[0] == 120 or mm.values[0] == 123):
