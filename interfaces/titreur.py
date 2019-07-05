@@ -152,7 +152,7 @@ class Midi2MQTT(object):
                 print('titreur/all/speed', str(mm.values[1]*10))
 
             # CC 32 = Bank LSB
-            elif mm.values[0] == 32:
+            elif mm.values[0] == 118:
                 self.xls.bank(mm.values[1])
                 print('bank', mm.values[1])
                 

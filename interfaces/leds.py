@@ -19,7 +19,8 @@ class Midi2MQTT(object):
         print(f"-- LEDS: connected to MQTT broker at {broker}")
 
         # Internal state
-        self.payload = [ bytearray(FIXTURE_SIZE) ]*16
+        self.payload = []
+        self.clear()
 
         # Send thread
         # self.run = True
@@ -32,22 +33,27 @@ class Midi2MQTT(object):
         mm = midi.MidiMessage(msg)
         
         
-        if mm.maintype() == 'NOTEON' or mm.maintype() == 'CC':
+        if mm.maintype() == 'NOTEON' or mm.maintype() == 'CC' or mm.maintype() == 'NOTEOFF':
 
             # NOTEON 0-15 or CC 20-35
             note = mm.values[0]
             if mm.maintype() == 'CC':
-                note -= 20
+                note -= 20    
             if note >= 0 and note < FIXTURE_SIZE:
-                self.payload[mm.channel][note] = mm.values[1]*2
-                self.mqttc.publish('k32/c'+str(mm.channel+1)+'/leds', payload=self.payload[mm.channel], qos=1, retain=False)
-                print('k32/c'+str(mm.channel+1)+'/leds', list(self.payload[mm.channel]))
+                if mm.maintype() == 'NOTEOFF': 
+                    self.payload[mm.channel][note] = 0
+                else: 
+                    self.payload[mm.channel][note] = mm.values[1]*2
+                for i in range(16):
+                    print('channel ', i+1, self.payload[i])
+                self.send(mm.channel)
+                print('')
 
             # CC 120 / 123 == ALL OFF
             if mm.maintype() == 'CC' and (mm.values[0] == 120 or mm.values[0] == 123):
-                self.payload = [ bytearray(FIXTURE_SIZE) ]*16
-                self.mqttc.publish('k32/c'+str(mm.channel+1)+'/leds', payload=self.payload[mm.channel], qos=1, retain=False)
-                print('k32/c'+str(mm.channel+1)+'/leds', list(self.payload[mm.channel]))
+                self.clear()
+                self.send(mm.channel)
+                
 
 
     def sender(self):
@@ -62,3 +68,10 @@ class Midi2MQTT(object):
         self.run = False
         self.thread.join()
             
+    def clear(self):
+        for i in range(16):
+            self.payload[i] = bytearray(FIXTURE_SIZE)
+
+    def send(self, channel):
+        self.mqttc.publish('k32/c'+str(channel+1)+'/leds', payload=self.payload[channel], qos=1, retain=False)
+        print('k32/c'+str(channel+1)+'/leds', list(self.payload[channel]))
