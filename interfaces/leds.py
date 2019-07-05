@@ -19,7 +19,7 @@ class Midi2MQTT(object):
         print(f"-- LEDS: connected to MQTT broker at {broker}")
 
         # Internal state
-        self.payload = []
+        self.payload = [0]*16
         self.clear()
 
         # Send thread
