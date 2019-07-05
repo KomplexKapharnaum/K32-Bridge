@@ -37,7 +37,7 @@ class XlsParser():
     def note2txt(self, noteabs, octave):
         value = None
 
-        if octave >= 1:
+        if octave >= 0:
             # C1 = 24 // C2 = 36
             if octave == 0: colx = octave + 8
             else: colx = octave 
@@ -88,7 +88,7 @@ class Mqtt2Socketio(object):
         self.mqttc = mqtt.Client()
         self.mqttc.connect(broker)
         self.mqttc.subscribe('titreur/all/#', 1)
-        self.mqttc.subscribe('titreur/8/#', 1)
+        self.mqttc.subscribe('titreur/0/#', 1)
         self.mqttc.on_message = self.on_mqtt_msg
         self.mqttc.loop_start()
         print(f"-- SOCKETIO: connected to broker at {broker}")
