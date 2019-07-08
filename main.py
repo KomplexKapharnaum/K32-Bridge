@@ -10,10 +10,14 @@ from interfaces import osc
 
 print("KTITREUR - Midi Bridge\n")
 
+
 if len(sys.argv) < 2:
-        print("broker ip missing.. please specify Broker IP")
-        sys.exit(1)
-brokerIP = sys.argv[1]
+        print('no broker specified, default to 2.0.0.1')
+        # print("broker ip missing.. please specify Broker IP")
+        # sys.exit(1)
+        brokerIP = "2.0.0.1"
+else : 
+        brokerIP = sys.argv[1]
 
 #
 # MIDI

@@ -7,7 +7,7 @@ import socketio
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# DEVICES = ['2.0.11.44', '2.0.11.45', '2.0.11.48', '2.0.11.50', '2.0.11.51', '2.0.11.52']
+# DEVICES = ['2.0.11.44', '2.0.11.45', '2.0.11.48', '2.0.11.50', '2.0.11.51', '2.0.11.52', '2.0.11.54']
 
 #
 # TITREUR MODE
