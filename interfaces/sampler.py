@@ -21,5 +21,9 @@ class Midi2MQTT(object):
         mm = midi.MidiMessage(msg)
         payload = '-'.join([str(v).zfill(3) for v in mm.message[:3] ])
 
-        self.mqttc.publish('k32/c'+str(mm.channel+1)+'/sampler', payload=payload, qos=1, retain=False)
-        print('k32/c'+str(mm.channel+1)+'/sampler', payload, mm.maintype())
+        if mm.channel+1 == 16:
+            self.mqttc.publish('k32/all/sampler', payload=payload, qos=1, retain=False)
+            print('k32/all/sampler', payload, mm.maintype())
+        else:
+            self.mqttc.publish('k32/c'+str(mm.channel+1)+'/sampler', payload=payload, qos=1, retain=False)
+            print('k32/c'+str(mm.channel+1)+'/sampler', payload, mm.maintype())
