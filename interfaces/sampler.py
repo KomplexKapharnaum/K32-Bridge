@@ -24,7 +24,7 @@ class Midi2MQTT(object):
             print('discarded')
             return
         if mm.maintype() == 'CC':
-            if mm.values[0] not in [0, 1, 2, 7, 119, 120]: 
+            if mm.values[0] not in [32, 1, 2, 7, 119, 120]: 
                 print('discarded')
                 return
 
