@@ -19,7 +19,8 @@ class Midi2MQTT(object):
         msg, deltatime = event
         self._wallclock += deltatime
         mm = midi.MidiMessage(msg)
-
+        
+        # FILTERS
         if mm.maintype() not in ['NOTEON', 'NOTEOFF', 'CC']: 
             print('discarded')
             return
@@ -28,11 +29,21 @@ class Midi2MQTT(object):
                 print('discarded')
                 return
 
+        
+        ## QOS
+        # VOLUME CC 7
+        if mm.maintype() == 'CC' and mm.values[0] == 7:
+            qos = 0
+        # OTHERS
+        else:
+            qos = 1
+
+        # PAYLOAD
         payload = '-'.join([str(v).zfill(3) for v in mm.message[:3] ])
 
         if mm.channel+1 == 16:
-            self.mqttc.publish('k32/all/sampler', payload=payload, qos=1, retain=False)
+            self.mqttc.publish('k32/all/sampler', payload=payload, qos=qos, retain=False)
             print('k32/all/sampler', payload, mm.maintype())
         else:
-            self.mqttc.publish('k32/c'+str(mm.channel+1)+'/sampler', payload=payload, qos=1, retain=False)
+            self.mqttc.publish('k32/c'+str(mm.channel+1)+'/sampler', payload=payload, qos=qos, retain=False)
             print('k32/c'+str(mm.channel+1)+'/sampler', payload, mm.maintype())
