@@ -19,6 +19,15 @@ class Midi2MQTT(object):
         msg, deltatime = event
         self._wallclock += deltatime
         mm = midi.MidiMessage(msg)
+
+        if mm.maintype() not in ['NOTEON', 'NOTEOFF', 'CC']: 
+            print('discarded')
+            return
+        if mm.maintype() == 'CC':
+            if mm.values[0] not in [0, 1, 2, 7, 119, 120]: 
+                print('discarded')
+                return
+
         payload = '-'.join([str(v).zfill(3) for v in mm.message[:3] ])
 
         if mm.channel+1 == 16:
