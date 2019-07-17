@@ -1,5 +1,21 @@
 
 
+##### INSTALL
+
+
+pip3 install python-rtmidi paho-mqtt xlrd python-socketio[client] watchdog cython
+pacman -S liblo
+git clone https://github.com/dsacre/pyliblo.git
+cd pyliblo
+python3 setup.py build
+python3 setup.py install
+git clone https://github.com/KomplexKapharnaum/K32-Bridge.git
+cd K32-Bridge
+./k32-bridge [brokerIP = 2.0.0.1]
+
+
+###### TODO
+
 Phones
 - Txt  fit
 - Arpeggio corpus
@@ -10,3 +26,6 @@ Titreur
 - upgrade Titreurs ! (+ /root/id)
 
 - upgrade RPi MESH
+
+
+
