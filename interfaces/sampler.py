@@ -25,7 +25,7 @@ class Midi2MQTT(object):
             print('discarded')
             return
         if mm.maintype() == 'CC':
-            if mm.values[0] not in [32, 1, 2, 7, 119, 120]: 
+            if mm.values[0] not in [1, 2, 7, 119, 120]: 
                 print('discarded')
                 return
 
@@ -42,8 +42,8 @@ class Midi2MQTT(object):
         payload = '-'.join([str(v).zfill(3) for v in mm.message[:3] ])
 
         if mm.channel+1 == 16:
-            self.mqttc.publish('k32/all/sampler', payload=payload, qos=qos, retain=False)
-            print('k32/all/sampler', payload, mm.maintype())
+            self.mqttc.publish('k32/all/midi', payload=payload, qos=qos, retain=False)
+            print('k32/all/midi', payload, mm.maintype())
         else:
-            self.mqttc.publish('k32/c'+str(mm.channel+1)+'/sampler', payload=payload, qos=qos, retain=False)
-            print('k32/c'+str(mm.channel+1)+'/sampler', payload, mm.maintype())
+            self.mqttc.publish('k32/c'+str(mm.channel+1)+'/midi', payload=payload, qos=qos, retain=False)
+            print('k32/c'+str(mm.channel+1)+'/midi', payload, mm.maintype())

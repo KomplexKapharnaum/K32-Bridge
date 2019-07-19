@@ -55,5 +55,5 @@ class Midi2MQTT(object):
             self.payload[i] = bytearray(FIXTURE_SIZE)
 
     def send(self, channel):
-        self.mqttc.publish('k32/c'+str(channel+1)+'/leds/pyramid', payload=self.payload[channel], qos=1, retain=False)
-        print('k32/c'+str(channel+1)+'/leds/pyramid', list(self.payload[channel]))
+        self.mqttc.publish('k32/c'+str(channel+1)+'/leds', payload=self.payload[channel], qos=1, retain=False)
+        print('k32/c'+str(channel+1)+'/leds', list(self.payload[channel]))

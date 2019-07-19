@@ -45,12 +45,16 @@ class MidiMessage():
         self.channel = message[0]%16
         self.values = message[1:]
 
-        print(self.maintype(), self.subtype(), self.values)
 
         if self.maintype() == 'NOTEON' and self.values[1] == 0:
             self.type == 8     # convert to NOTEOFF
 
-        # print('-- MIDI', self.channel, self.maintype(), self.values)
+        # MONITOR
+        # if self.maintype() in ['NOTEON', 'NOTEOFF', 'CC']:
+        #     print(self.maintype(), 'c'+str(self.subtype()+1), self.values)
+        # else:   
+        #     print(self.maintype(), self.subtype(), self.values)
+
         # Convert Note Value
         # if self.type == 'NOTEON' or self.type == 'NOTEOFF':
             # self.values[0] += 1     
@@ -83,4 +87,30 @@ class MidiInterface():
         self.midiHandler.stop()
         del self.midiIN
 
+
+class MidiMonitor(object):
+    def __init__(self):
+        self._wallclock = time.time()
+        
+        print("-- MONITOR: started")
+
+    def __call__(self, event, data=None):
+        msg, deltatime = event
+        self._wallclock += deltatime
+        mm = MidiMessage(msg)
+        
+        # FILTERS
+        # if mm.maintype() not in ['NOTEON', 'NOTEOFF', 'CC']: 
+        #     return
+        # if mm.maintype() == 'CC':
+        #     if mm.values[0] not in [32, 1, 2, 7, 119, 120]: 
+        #         return
+
+        # MONITOR
+        if mm.maintype() in ['NOTEON', 'NOTEOFF', 'CC']:
+            print(mm.maintype(), 'c'+str(mm.subtype()+1), mm.values)
+        else:   
+            print(mm.maintype(), mm.subtype(), mm.values)
+
+        
 
