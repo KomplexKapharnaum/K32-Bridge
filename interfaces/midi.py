@@ -92,7 +92,8 @@ class MidiMonitor(object):
     def __init__(self):
         self._wallclock = time.time()
         
-        print("-- MONITOR: started")
+        print("-- MIDI MONITOR: started \n")
+
 
     def __call__(self, event, data=None):
         msg, deltatime = event

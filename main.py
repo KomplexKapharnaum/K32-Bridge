@@ -3,9 +3,13 @@ import sys, time, signal
 
 from interfaces import midi
 from interfaces import titreur
+from interfaces import webapp
 from interfaces import sampler
 from interfaces import leds
 from interfaces import osc
+from interfaces import xlsreader
+
+webappURL = 'https://live.beaucoupbeaucoup.art'
 
 
 print("KTITREUR - Midi Bridge\n")
@@ -17,22 +21,29 @@ if len(sys.argv) < 2:
 else : 
         brokerIP = sys.argv[1]
 
-#
-# MIDI
-#
-midiTitreur     = midi.MidiInterface( "KTitreur", 
-                        titreur.Midi2MQTT( brokerIP , "MidiMapping.xls") )
+print("Connecting...\n")
 
-mobileTitreur   = titreur.Mqtt2Socketio( brokerIP )
+#
+# MIDI BRIDGES
+#
 
-midiSampler     = midi.MidiInterface("K32-sampler", 
-                        sampler.Midi2MQTT( brokerIP ) )
+midiMon        = midi.MidiInterface("K32-monitor", 
+                        midi.MidiMonitor() )
+
 
 midiLeds        = midi.MidiInterface("K32-leds", 
                         leds.Midi2MQTT( brokerIP ) )
 
-midiLeds        = midi.MidiInterface("K32-monitor", 
-                        midi.MidiMonitor() )
+midiTitreur     = midi.MidiInterface( "KTitreur", 
+                        titreur.Midi2MQTT( brokerIP , "MidiMapping.xls") )
+
+midiWebapp      = midi.MidiInterface( "KWebapp", 
+                        webapp.Midi2SocketIO( webappURL , "MidiMapping.xls") )
+
+# midiSampler     = midi.MidiInterface("K32-sampler", 
+#                         sampler.Midi2MQTT( brokerIP ) )
+
+
 
 #
 # OSC
@@ -54,6 +65,6 @@ def signal_handler(sig, frame):
         oscIN.stop()
         sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
-print('Press Ctrl+C')
+print('Press Ctrl+C to quit')
 signal.pause()
 

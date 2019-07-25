@@ -1,11 +1,7 @@
 import time, signal, sys, os
-import xlrd
 import paho.mqtt.client as mqtt
 from interfaces import midi
-import socketio
-
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from interfaces import xlsreader
 
 # DEVICES = ['2.0.11.44', '2.0.11.45', '2.0.11.48', '2.0.11.50', '2.0.11.51', '2.0.11.52', '2.0.11.54']
 
@@ -22,89 +18,6 @@ def getMode(txt):
 
 
 #
-# XLS Read and Parse
-#
-class XlsParser():
-    def __init__(self, path):
-        self.path = path
-        self.workbook = xlrd.open_workbook(self.path)
-        self.worksheet = self.workbook.sheet_by_index(0)
-        self.bank(1)
-
-    def bank(self, b):
-        self.offset = max(1, 16*(b)+1)
-
-    def note2txt(self, noteabs, octave):
-        value = None
-
-        if octave >= 0:
-            # C1 = 24 // C2 = 36
-            if octave == 0: colx = octave + 8
-            else: colx = octave 
-            rowx = self.offset + noteabs + 1
-            if rowx in range(self.worksheet.nrows):
-                value = self.worksheet.cell_value( rowx, colx )
-            # print('Parser:', value)
-        return value
-
-    def reload(self):
-        self.workbook.release_resources()
-        self.workbook = xlrd.open_workbook(self.path)
-        self.worksheet = self.workbook.sheet_by_index(0)
-
-    
-#
-# XLS Watchdog handler
-#
-class XlsHandler(FileSystemEventHandler):
-    def __init__(self, parser, mqttc):
-        super().__init__()
-        self.parser = parser
-        self.mqttc = mqttc
-
-    def on_modified(self, event):
-        if os.path.basename(event.src_path) == 'MidiMapping.xls':
-            print('-- MidiMapping.xls modified')
-            self.mqttc.publish('titreur/clear', payload="", qos=2, retain=False)
-            print('titreur/clear')
-            self.parser.reload()
-
-
-#
-#  SOCKETIO link
-#
-sioURL = 'https://live.beaucoupbeaucoup.art'
-sio = socketio.Client()
-sio.connect(sioURL)
-
-@sio.on('connect')
-def on_connect():
-    print(f"-- SOCKETIO: connected to online server at {sioURL}")
-    sio.emit('command', 'ok')
-
-
-class Mqtt2Socketio(object):
-    def __init__(self, broker):
-        self.mqttc = mqtt.Client()
-        self.mqttc.connect(broker)
-        self.mqttc.subscribe('titreur/all/#', 1)
-        self.mqttc.subscribe('titreur/0/#', 1)
-        self.mqttc.on_message = self.on_mqtt_msg
-        self.mqttc.loop_start()
-        print(f"-- SOCKETIO: connected to broker at {broker}")
-
-    def on_mqtt_msg(self, client, userdata, message):
-        # print("Received message '" + str(message.payload) + "' on topic '"
-        #     + message.topic + "' with QoS " + str(message.qos))
-        msg = {'topic': '/'.join(message.topic.split('/')[2:]), 'payload': message.payload.decode('utf8', errors='ignore'), 'qos': message.qos}
-        # print(msg)
-        sio.emit('mqtt', msg)
-
-    def stop(self):
-        self.mqttc.loop_stop(True)
-
-
-#
 #  MIDI Handler (PUBLIC)
 #
 class Midi2MQTT(object):
@@ -115,15 +28,12 @@ class Midi2MQTT(object):
         self.mqttc = mqtt.Client()
         self.mqttc.connect(broker)
         self.mqttc.loop_start()
-        print(f"-- TITREUR: connected to broker at {broker}")
+        print(f"-- TITREUR: sending to broker at {broker}")
 
         # XLS Read and Parse
-        self.xls = XlsParser(xlspath)
+        self.xls = xlsreader.XlsParser(xlspath, 0, self)
 
-        # XLS Watchdog
-        self.observer = Observer()
-        self.observer.schedule( XlsHandler(self.xls, self.mqttc), path='./', recursive=False)
-        self.observer.start()
+        print("")
 
 
     def __call__(self, event, data=None):
@@ -165,3 +75,7 @@ class Midi2MQTT(object):
 
     def stop(self):
         self.mqttc.loop_stop(True)
+
+    def clear(self):
+        self.mqttc.publish('titreur/clear', payload="", qos=2, retain=False)
+        print('titreur/clear')

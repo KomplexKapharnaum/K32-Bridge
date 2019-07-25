@@ -16,7 +16,7 @@ class Midi2MQTT(object):
         self.mqttc = mqtt.Client()
         self.mqttc.connect(broker)
         self.mqttc.loop_start()
-        print(f"-- LEDS: connected to MQTT broker at {broker}")
+        print(f"-- LEDS: sending to broker at {broker}\n")
 
         # Internal state
         self.payload = [0]*16
