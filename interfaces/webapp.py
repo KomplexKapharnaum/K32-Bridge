@@ -19,7 +19,7 @@ def on_connect():
 #  MIDI Handler (PUBLIC)
 #
 class Midi2SocketIO(object):
-    def __init__(self, sioURL, xlspath):
+    def __init__(self, sioURL, xls):
         self._wallclock = time.time()
 
         try:
@@ -28,7 +28,7 @@ class Midi2SocketIO(object):
             print(f"-- SOCKETIO: ERROR connecting remote server at {sioURL} \n\t\tverify internet connection and restart")
 
         # XLS Read and Parse
-        self.xls = xlsreader.XlsParser(xlspath, 1, self)
+        self.xls = xls
 
         print("")
 
@@ -41,14 +41,14 @@ class Midi2SocketIO(object):
         msg = 'niet'
 
         if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt( 1, mm.note_abs(), mm.octave() )
             if txt: 
                 # txt += '§' + getMode(txt)
                 msg = {'topic': '/add', 'payload': txt}
                 # self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=0, retain=False)
 
         elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt( 1, mm.note_abs(), mm.octave() )
             if txt:
                 # txt += '§' + getMode(txt)
                 msg = {'topic': '/rm', 'payload': txt}

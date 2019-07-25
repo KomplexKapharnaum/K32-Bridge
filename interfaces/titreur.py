@@ -21,7 +21,7 @@ def getMode(txt):
 #  MIDI Handler (PUBLIC)
 #
 class Midi2MQTT(object):
-    def __init__(self, broker, xlspath):
+    def __init__(self, broker, xls):
         self._wallclock = time.time()
 
         # MQTT Client
@@ -31,7 +31,7 @@ class Midi2MQTT(object):
         print(f"-- TITREUR: sending to broker at {broker}")
 
         # XLS Read and Parse
-        self.xls = xlsreader.XlsParser(xlspath, 0, self)
+        self.xls = xls
 
         print("")
 
@@ -42,14 +42,14 @@ class Midi2MQTT(object):
         mm = midi.MidiMessage(msg)
 
         if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt( 0, mm.note_abs(), mm.octave() )
             if txt: 
                 txt += '§' + getMode(txt)
                 self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=0, retain=False)
                 print('titreur/'+str(mm.octave())+'/add', txt)
 
         elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt( mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt( 0, mm.note_abs(), mm.octave() )
             if txt:
                 txt += '§' + getMode(txt)
                 self.mqttc.publish('titreur/'+str(mm.octave())+'/rm', payload=txt, qos=2, retain=False)

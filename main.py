@@ -23,6 +23,9 @@ else :
 
 print("Connecting...\n")
 
+#  XLS
+xls = xlsreader.XlsParser("MidiMapping.xls")
+
 #
 # MIDI BRIDGES
 #
@@ -35,10 +38,10 @@ midiLeds        = midi.MidiInterface("K32-leds",
                         leds.Midi2MQTT( brokerIP ) )
 
 midiTitreur     = midi.MidiInterface( "KTitreur", 
-                        titreur.Midi2MQTT( brokerIP , "MidiMapping.xls") )
+                        titreur.Midi2MQTT( brokerIP , xls) )
 
 midiWebapp      = midi.MidiInterface( "KWebapp", 
-                        webapp.Midi2SocketIO( webappURL , "MidiMapping.xls") )
+                        webapp.Midi2SocketIO( webappURL , xls) )
 
 # midiSampler     = midi.MidiInterface("K32-sampler", 
 #                         sampler.Midi2MQTT( brokerIP ) )
