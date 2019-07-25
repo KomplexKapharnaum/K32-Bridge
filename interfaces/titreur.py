@@ -65,6 +65,7 @@ class Midi2MQTT(object):
             # CC 0 = Bank
             elif mm.values[0] == 0:
                 self.xls.bank(mm.values[1])
+                self.mqttc.publish('titreur/all/clear', payload="", qos=1, retain=False)
                 print('bank', mm.values[1])
                 
             # CC 120 / 123 == ALL OFF

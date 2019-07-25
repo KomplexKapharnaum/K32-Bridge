@@ -10,6 +10,7 @@ from watchdog.events import FileSystemEventHandler
 class XlsParser():
     def __init__(self, path, sheet, parent=None):
         self.path = path
+        self.sheet = sheet
         self.parent = None
         self.workbook = xlrd.open_workbook(self.path)
         self.worksheet = self.workbook.sheet_by_index(sheet)
@@ -17,7 +18,7 @@ class XlsParser():
         print(f"-- XLS: file loaded {path}")
 
         self.observer = Observer()
-        self.observer.schedule( XlsHandler(self), path='./', recursive=False)
+        self.observer.schedule( XlsHandler(self), path='/Users/mat/Desktop/K32-Bridge/', recursive=False)
         self.observer.start()
 
     def bank(self, b):
@@ -32,13 +33,13 @@ class XlsParser():
             rowx = self.offset + noteabs + 1
             if rowx in range(self.worksheet.nrows):
                 value = self.worksheet.cell_value( rowx, colx )
-            print('Parser:', value, rowx, colx)
+            # print('Parser:', value, rowx, colx)
         return value
 
     def reload(self):
         self.workbook.release_resources()
         self.workbook = xlrd.open_workbook(self.path)
-        self.worksheet = self.workbook.sheet_by_index(0)
+        self.worksheet = self.workbook.sheet_by_index(self.sheet)
 
     
 #
