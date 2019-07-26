@@ -81,9 +81,15 @@ class MidiInterface():
 
         self.midiIN = rtmidi.MidiIn()
 
-        print(os.name)
         if os.name == 'nt':
-            print(self.midiIN.get_ports())
+            portN = -1
+            for i,val in enumerate(self.midiIN.get_ports()):
+                if val.startswith(name):
+                    portN = i
+            if portN >= 0:
+                self.midiIN.open_port( portN )
+            else:
+                print(name, " midi port not found in ", self.midiIN.get_ports())
         else:
             self.midiIN.open_virtual_port( name )
         self.midiIN.set_callback( self.midiHandler, data=None)

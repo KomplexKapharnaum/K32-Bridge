@@ -6,7 +6,6 @@ from interfaces import titreur
 from interfaces import webapp
 from interfaces import sampler
 from interfaces import leds
-from interfaces import osc
 from interfaces import xlsreader
 
 webappURL = 'https://live.beaucoupbeaucoup.art'
@@ -69,5 +68,13 @@ def signal_handler(sig, frame):
         sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 print('Press Ctrl+C to quit')
-signal.pause()
+
+try:
+        while True:
+                signal.pause()
+                
+except AttributeError:
+        # signal.pause() is missing for Windows; wait 1ms and loop instead
+        while True:
+                time.sleep(1)
 
