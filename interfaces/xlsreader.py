@@ -19,7 +19,8 @@ class XlsParser():
 
         self.handler = XlsHandler(self)
         self.observer = Observer()
-        self.observer.schedule( self.handler, path='/Users/mat/Desktop/K32-Bridge/', recursive=False)
+        # self.observer.schedule( self.handler, path='/Users/mat/Desktop/K32-Bridge/', recursive=False)
+        self.observer.schedule( self.handler, path='./', recursive=False)
         self.observer.start()
 
     def bank(self, b):
