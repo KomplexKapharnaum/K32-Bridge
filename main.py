@@ -5,7 +5,7 @@ from interfaces import midi
 from interfaces import titreur
 from interfaces import sampler
 from interfaces import leds
-from interfaces import osc
+# from interfaces import osc
 
 
 print("KTITREUR - Midi Bridge\n")
@@ -36,7 +36,7 @@ midiLeds        = midi.MidiInterface("K32-leds",
 #
 # OSC
 #
-oscIN           = osc.OscInterface(9037, brokerIP)
+# oscIN           = osc.OscInterface(9037, brokerIP)
 
 #
 # QT INTERFACE

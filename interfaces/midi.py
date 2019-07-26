@@ -1,5 +1,5 @@
 import rtmidi
-import time
+import time, os
 import json
 
 import paho.mqtt.client as mqtt
@@ -76,7 +76,12 @@ class MidiInterface():
         self.midiHandler = midiHandler
 
         self.midiIN = rtmidi.MidiIn()
-        self.midiIN.open_virtual_port( name )
+
+        print(os.name)
+        if os.name == 'nt':
+            print(self.midiIN.get_ports())
+        else:
+            self.midiIN.open_virtual_port( name )
         self.midiIN.set_callback( self.midiHandler, data=None)
     
     def stop(self):
