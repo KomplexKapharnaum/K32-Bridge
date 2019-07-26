@@ -1,5 +1,5 @@
 import rtmidi
-import time
+import time, os
 import json
 
 import paho.mqtt.client as mqtt
@@ -80,7 +80,18 @@ class MidiInterface():
         self.midiHandler = midiHandler
 
         self.midiIN = rtmidi.MidiIn()
-        self.midiIN.open_virtual_port( name )
+
+        if os.name == 'nt':
+            portN = -1
+            for i,val in enumerate(self.midiIN.get_ports()):
+                if val.startswith(name):
+                    portN = i
+            if portN >= 0:
+                self.midiIN.open_port( portN )
+            else:
+                print(name, " midi port not found in ", self.midiIN.get_ports())
+        else:
+            self.midiIN.open_virtual_port( name )
         self.midiIN.set_callback( self.midiHandler, data=None)
     
     def stop(self):
