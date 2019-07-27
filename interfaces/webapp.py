@@ -19,7 +19,7 @@ def on_connect():
 #  MIDI Handler (PUBLIC)
 #
 class Midi2SocketIO(object):
-    def __init__(self, sioURL, xls):
+    def __init__(self, sioURL, xls, broker):
         self._wallclock = time.time()
 
         try:
@@ -29,6 +29,9 @@ class Midi2SocketIO(object):
 
         # XLS Read and Parse
         self.xls = xls
+
+        # MQTT input
+        self.mqinput = MQTT2SocketIO(broker)
 
         print("")
 
@@ -86,3 +89,27 @@ class Midi2SocketIO(object):
         msg = {'topic': '/clear', 'payload': ""}
         sio.emit('mqtt', msg)
         # self.mqttc.publish('titreur/clear', payload="", qos=2, retain=False)
+
+
+class MQTT2SocketIO(object):
+    def __init__(self, broker):
+        self._wallclock = time.time()
+
+        # MQTT Client
+        self.mqttc = mqtt.Client()
+        self.mqttc.connect(broker)
+        self.mqttc.subscribe('titreur/webapp/#')
+        self.mqttc.on_message = self.on_message
+        self.mqttc.loop_start()
+        print(f"-- SOCKETIO: listening to broker at {broker}")
+
+    def on_message(self, client, userdata, message):
+        # print("MQTT: Received message '" + str(message.payload) + "' on topic '" + message.topic + "' with QoS " + str(message.qos))
+        command  = message.topic.split('/')[2:]
+        args = message.payload.decode().split('§')
+        if len(args) > 1:
+            args = args[1:]
+        msg = {'topic': '/'+command, 'payload': args[0]}
+        sio.emit('mqtt', msg)
+
+    
