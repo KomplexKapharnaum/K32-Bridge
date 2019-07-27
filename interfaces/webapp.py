@@ -105,11 +105,12 @@ class MQTT2SocketIO(object):
 
     def on_message(self, client, userdata, message):
         # print("MQTT: Received message '" + str(message.payload) + "' on topic '" + message.topic + "' with QoS " + str(message.qos))
-        command  = message.topic.split('/')[2:]
-        args = message.payload.decode().split('§')
-        if len(args) > 1:
-            args = args[1:]
-        msg = {'topic': '/'+command, 'payload': args[0]}
+        command  = message.topic.split('/')[2:][0]
+        args = message.payload.decode().split('§')[0]
+        if len(args) > 0:
+            args = args.replace('_', ' ')
+        msg = {'topic': '/'+command, 'payload': args}
+        print('webapp mqtt', msg)
         sio.emit('mqtt', msg)
 
     
