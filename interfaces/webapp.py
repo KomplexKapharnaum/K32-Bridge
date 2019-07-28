@@ -66,7 +66,7 @@ class Midi2SocketIO(object):
 
             # CC 0 = Bank
             elif mm.values[0] == 0:
-                self.xls.bank(mm.values[1])
+                self.xls.bank(1, mm.values[1])
                 print('bank', mm.values[1])
                 
             # CC 120 / 123 == ALL OFF
