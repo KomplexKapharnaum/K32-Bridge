@@ -65,7 +65,7 @@ midiWebapp      = midi.MidiInterface( "KWebapp",
 def signal_handler(sig, frame):
         print('You pressed Ctrl+C!')
         midiTitreur.stop()
-        oscIN.stop()
+        # oscIN.stop()
         sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 print('Press Ctrl+C to quit')
