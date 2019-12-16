@@ -51,19 +51,19 @@ class Midi2MQTT(object):
             if mm.maintype() == 'CC':
                 note -= 20    
             if note >= 0:
-                if (note < FIXTURE_SIZE) or (mm.channel == 15 and note < FIXTURE_SIZEDMX):
+                if (note < FIXTURE_SIZE) or (mm._channel == 15 and note < FIXTURE_SIZEDMX):
                     if mm.maintype() == 'NOTEOFF': 
-                        self.payload[mm.channel][note] = 0
+                        self.payload[mm._channel][note] = 0
                     else: 
-                        self.payload[mm.channel][note] = mm.values[1]*2
-                    # self.send(mm.channel)
-                    self.dirty[mm.channel] = True
+                        self.payload[mm._channel][note] = mm.values[1]*2
+                    # self.send(mm._channel)
+                    self.dirty[mm._channel] = True
 
             # CC 119 / 120 / 123 == ALL OFF
             if mm.maintype() == 'CC' and (mm.values[0] == 120 or mm.values[0] == 119 or mm.values[0] == 123):
                 self.clear()
-                # self.send(mm.channel)   
-                self.dirty[mm.channel] = True
+                # self.send(mm._channel)   
+                self.dirty[mm._channel] = True
 
 
     def stop(self):
@@ -75,9 +75,9 @@ class Midi2MQTT(object):
             self.payload[i] = bytearray(FIXTURE_SIZE)
         self.payload[15] = bytearray(FIXTURE_SIZEDMX)
 
-    def send(self, channel):
-        self.mqttc.publish('k32/c'+str(channel+1)+'/leds', payload=self.payload[channel], qos=1, retain=False)
-        print('k32/c'+str(channel+1)+'/leds', list(self.payload[channel]))
+    def send(self, chan):
+        self.mqttc.publish('k32/c'+str(chan+1)+'/leds', payload=self.payload[chan], qos=1, retain=False)
+        print('k32/c'+str(chan+1)+'/leds', list(self.payload[chan]))
 
     def sendAll(self):
         for i in range(16):

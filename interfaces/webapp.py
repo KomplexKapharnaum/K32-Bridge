@@ -44,25 +44,20 @@ class Midi2SocketIO(object):
         msg = 'niet'
 
         if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt( 1, mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt_v1( 1, mm.note_abs(), mm.octave() )
             if txt: 
-                # txt += '§' + getMode(txt)
                 msg = {'topic': '/add', 'payload': txt}
-                # self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=0, retain=False)
 
         elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt( 1, mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt_v1( 1, mm.note_abs(), mm.octave() )
             if txt:
-                # txt += '§' + getMode(txt)
                 msg = {'topic': '/rm', 'payload': txt}
-                # self.mqttc.publish('titreur/'+str(mm.octave())+'/rm', payload=txt, qos=2, retain=False)
 
         elif mm.maintype() == 'CC':
 
             # CC 14 = ARPPEGIO SPEED
             if mm.values[0] == 12:
                 msg = {'topic': '/speed', 'payload': str(mm.values[1]*10)}
-                # self.mqttc.publish('titreur/all/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
 
             # CC 0 = Bank
             elif mm.values[0] == 0:
@@ -72,7 +67,6 @@ class Midi2SocketIO(object):
             # CC 120 / 123 == ALL OFF
             if mm.values[0] == 120 or mm.values[0] == 123:
                 msg = {'topic': '/clear', 'payload': ""}
-                # self.mqttc.publish('titreur/all/clear', payload="", qos=1, retain=False)
         
         else: 
             return

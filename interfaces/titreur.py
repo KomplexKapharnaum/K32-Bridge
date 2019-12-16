@@ -41,19 +41,21 @@ class Midi2MQTT(object):
         self._wallclock += deltatime
         mm = midi.MidiMessage(msg)
 
+        # print(mm.maintype(), 'chan '+str(mm.channel()), mm.values)
+
         if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt( 0, mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt_v2( 0, mm.note(), mm.channel() )
             if txt: 
                 txt += '§' + getMode(txt)
-                self.mqttc.publish('titreur/'+str(mm.octave())+'/add', payload=txt, qos=0, retain=False)
-                print('titreur/'+str(mm.octave())+'/add', txt)
+                self.mqttc.publish('titreur/'+str(mm.channel())+'/add', payload=txt, qos=0, retain=False)
+                print('titreur/'+str(mm.channel())+'/add', txt)
 
         elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt( 0, mm.note_abs(), mm.octave() )
+            txt = self.xls.note2txt_v2( 0, mm.note(), mm.channel() )
             if txt:
                 txt += '§' + getMode(txt)
-                self.mqttc.publish('titreur/'+str(mm.octave())+'/rm', payload=txt, qos=2, retain=False)
-                print('titreur/'+str(mm.octave())+'/rm', txt)
+                self.mqttc.publish('titreur/'+str(mm.channel())+'/rm', payload=txt, qos=2, retain=False)
+                print('titreur/'+str(mm.channel())+'/rm', txt)
 
         elif mm.maintype() == 'CC':
 

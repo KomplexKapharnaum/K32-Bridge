@@ -42,7 +42,7 @@ class MidiMessage():
         self.message = message
 
         self.type = message[0]//16
-        self.channel = message[0]%16
+        self._channel = message[0]%16
         self.values = message[1:]
 
 
@@ -63,10 +63,16 @@ class MidiMessage():
         return MIDITYPE[self.type]
     
     def systype(self):
-        return MIDISYS[self.channel]
+        return MIDISYS[self._channel]
 
     def subtype(self):
-        return  self.channel if (self.maintype() != 'SYSTEM') else self.systype()
+        return  self._channel if (self.maintype() != 'SYSTEM') else self.systype()
+
+    def channel(self):
+        return self._channel+1
+
+    def note(self):
+        return (self.values[0])
 
     def note_abs(self):
         return (self.values[0]%12)
@@ -120,7 +126,7 @@ class MidiMonitor(object):
 
         # MONITOR
         if mm.maintype() in ['NOTEON', 'NOTEOFF', 'CC']:
-            print(mm.maintype(), 'c'+str(mm.subtype()+1), mm.values)
+            print(mm.maintype(), 'chan '+str(mm.channel()), mm.values)
         else:   
             print(mm.maintype(), mm.subtype(), mm.values)
 

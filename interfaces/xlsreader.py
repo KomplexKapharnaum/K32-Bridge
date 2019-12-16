@@ -29,13 +29,25 @@ class XlsParser():
     def bank(self, ws, b):
         self.offset[ws] = max(1, 16*(b)+1)
 
-    def note2txt(self, sheet, noteabs, octave):
+    def note2txt_v1(self, sheet, noteabs, octave):
         value = None
 
         if octave >= 0:
             # C1 = 24 // C2 = 36
             colx = octave 
             rowx = self.offset[sheet] + noteabs + 1
+            if rowx in range(self.worksheet[sheet].nrows):
+                value = self.worksheet[sheet].cell_value( rowx, colx )
+            # print('Parser:', value, rowx, colx)
+        return value
+
+    def note2txt_v2(self, sheet, note, chan):
+        value = None
+
+        if chan > 0:
+            # C-1 = 0 // C0 = 12 // C1 = 24 // C2 = 36
+            colx = chan+1 
+            rowx = note+3
             if rowx in range(self.worksheet[sheet].nrows):
                 value = self.worksheet[sheet].cell_value( rowx, colx )
             # print('Parser:', value, rowx, colx)

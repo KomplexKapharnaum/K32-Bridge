@@ -41,9 +41,9 @@ class Midi2MQTT(object):
         # PAYLOAD
         payload = '-'.join([str(v).zfill(3) for v in mm.message[:3] ])
 
-        if mm.channel+1 == 16:
+        if mm.channel() == 16:
             self.mqttc.publish('k32/all/midi', payload=payload, qos=qos, retain=False)
             print('k32/all/midi', payload, mm.maintype())
         else:
-            self.mqttc.publish('k32/c'+str(mm.channel+1)+'/midi', payload=payload, qos=qos, retain=False)
-            print('k32/c'+str(mm.channel+1)+'/midi', payload, mm.maintype())
+            self.mqttc.publish('k32/c'+str(mm.channel())+'/midi', payload=payload, qos=qos, retain=False)
+            print('k32/c'+str(mm.channel())+'/midi', payload, mm.maintype())
