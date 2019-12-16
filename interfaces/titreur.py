@@ -61,8 +61,8 @@ class Midi2MQTT(object):
 
             # CC 14 = ARPPEGIO SPEED
             if mm.values[0] == 12:
-                self.mqttc.publish('titreur/all/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
-                print('titreur/all/speed', str(mm.values[1]*10))
+                self.mqttc.publish('titreur/'+str(mm.channel())+'/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
+                print('titreur/'+str(mm.channel())+'/speed', str(mm.values[1]*10))
 
             # CC 0 = Bank
             elif mm.values[0] == 0:
@@ -72,13 +72,13 @@ class Midi2MQTT(object):
                 
             # CC 120 / 123 == ALL OFF
             if mm.values[0] == 120 or mm.values[0] == 123:
-                self.mqttc.publish('titreur/all/clear', payload="", qos=1, retain=False)
-                print('titreur/all/clear')
+                self.mqttc.publish('titreur/'+str(mm.channel())+'/clear', payload="", qos=1, retain=False)
+                print('titreur/'+str(mm.channel())+'/clear')
 
 
     def stop(self):
         self.mqttc.loop_stop(True)
 
     def clear(self):
-        self.mqttc.publish('titreur/clear', payload="", qos=2, retain=False)
-        print('titreur/clear')
+        self.mqttc.publish('titreur/all/clear', payload="", qos=2, retain=False)
+        print('titreur/all/clear')
