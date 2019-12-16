@@ -47,7 +47,7 @@ class XlsParser():
         if chan > 0:
             # C-1 = 0 // C0 = 12 // C1 = 24 // C2 = 36
             colx = chan+1 
-            rowx = note+3
+            rowx = note+2
             if rowx in range(self.worksheet[sheet].nrows):
                 value = self.worksheet[sheet].cell_value( rowx, colx )
             # print('Parser:', value, rowx, colx)
