@@ -64,6 +64,9 @@ class Midi2MQTT(object):
                         sub1 = ("_").join(sub[1:])
                         txt = sub[0]+"/"+sub1
 
+                    if txt.endswith('/'):
+                        txt += "_"
+
                     txt += '§' + getMode(txt)
 
                     if mm.maintype() == 'NOTEON':
