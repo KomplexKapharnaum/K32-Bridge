@@ -33,7 +33,7 @@ xls = xlsreader.XlsParser("MidiMapping.xls")
 midiMon        = midi.MidiInterface("K32-monitor", midi.MidiMonitor() )
 
 # midiLeds        = midi.MidiInterface("K32-leds", leds.Midi2MQTT( brokerIP ) )
-midiLeds        = midi.MidiInterface("K32-leds", leds.Midi2OSC( 9137, "2.255.255.255" ) )
+midiLeds        = midi.MidiInterface("K32-leds", leds.Midi2OSC( 9137, "255.255.255.255" ) )
 
 midiTitreur     = midi.MidiInterface( "KTitreur", titreur.Midi2MQTT( brokerIP , xls) )
 

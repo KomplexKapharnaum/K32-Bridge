@@ -56,6 +56,7 @@ class Midi2MQTT(object):
             else:
                 txt = self.xls.getCell( self.bank, mm.channel()+1, mm.note()+2 )
                 if txt: 
+                    txt = txt.strip()
                     txt = txt.replace("\n", "/")
                     txt = txt.replace("\r", "")
                     txt += '§' + getMode(txt)
