@@ -4,6 +4,7 @@ import xlrd
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+
 #
 # XLS Read and Parse
 #
@@ -14,9 +15,6 @@ class XlsParser():
         self.workbook = xlrd.open_workbook(self.path)
         self.worksheet = [self.workbook.sheet_by_index(0), self.workbook.sheet_by_index(1)]
 
-        self.offset = [0,0]
-        self.bank(0,1)
-        self.bank(1,1)
         print(f"-- XLS: file loaded {path}")
 
         self.handler = XlsHandler(self)
@@ -26,31 +24,14 @@ class XlsParser():
         self.observer.schedule( self.handler, path='./', recursive=False)
         self.observer.start()
 
-    def bank(self, ws, b):
-        self.offset[ws] = max(1, 16*(b)+1)
-
-    def note2txt_v1(self, sheet, noteabs, octave):
+    def getCell(self, sheet, colx, rowx):
         value = None
-
-        if octave >= 0:
-            # C1 = 24 // C2 = 36
-            colx = octave 
-            rowx = self.offset[sheet] + noteabs + 1
-            if rowx in range(self.worksheet[sheet].nrows):
-                value = self.worksheet[sheet].cell_value( rowx, colx )
-            # print('Parser:', value, rowx, colx)
-        return value
-
-    def note2txt_v2(self, sheet, note, chan):
-        value = None
-
-        if chan > 0:
-            # C-1 = 0 // C0 = 12 // C1 = 24 // C2 = 36
-            colx = chan+1 
-            rowx = note+2
-            if rowx in range(self.worksheet[sheet].nrows):
-                value = self.worksheet[sheet].cell_value( rowx, colx )
-            # print('Parser:', value, rowx, colx)
+        if sheet == -1:
+            sheet = len(self.workbook.sheet_names())-1  # last sheet
+        if (colx >= 0): 
+            if sheet >= 0 and sheet < len(self.workbook.sheet_names()):
+                if rowx in range(self.worksheet[sheet].nrows):
+                    value = self.worksheet[sheet].cell_value( rowx, colx )
         return value
 
     def reload(self):

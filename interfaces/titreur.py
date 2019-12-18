@@ -33,6 +33,8 @@ class Midi2MQTT(object):
         # XLS Read and Parse
         self.xls = xls
 
+        self.bank = 0
+
         print("")
 
 
@@ -43,42 +45,53 @@ class Midi2MQTT(object):
 
         # print(mm.maintype(), 'chan '+str(mm.channel()), mm.values)
 
-        if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt_v2( 0, mm.note(), mm.channel() )
-            if txt: 
-                txt += '§' + getMode(txt)
-                self.mqttc.publish('titreur/'+str(mm.channel())+'/add', payload=txt, qos=0, retain=False)
-                print('titreur/'+str(mm.channel())+'/add', txt)
+        if mm.maintype() in ['NOTEON', 'NOTEOFF']:
 
-        elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt_v2( 0, mm.note(), mm.channel() )
-            if txt:
-                txt += '§' + getMode(txt)
-                self.mqttc.publish('titreur/'+str(mm.channel())+'/rm', payload=txt, qos=2, retain=False)
-                print('titreur/'+str(mm.channel())+'/rm', txt)
+            # NOTEON 127
+            if mm.maintype() == 'NOTEON' and mm.note() == 127:
+                self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload="", qos=1, retain=False)
+                print('NOTE 127: k32/c'+str(mm.channel())+'/titre/clear')
+
+            # NOTES TXT from XLS
+            else:
+                txt = self.xls.getCell( self.bank, mm.channel()+1, mm.note()+2 )
+                if txt: 
+                    txt = txt.replace("\n", "/")
+                    txt = txt.replace("\r", "")
+                    txt += '§' + getMode(txt)
+
+                    if mm.maintype() == 'NOTEON':
+                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/add', payload=txt, qos=0, retain=False)
+                        print('k32/c'+str(mm.channel())+'/titre/add', txt)
+
+                    elif mm.maintype() == 'NOTEOFF':
+                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/rm', payload=txt, qos=2, retain=False)
+                        print('k32/c'+str(mm.channel())+'/titre/rm', txt)
+
+            
 
         elif mm.maintype() == 'CC':
 
             # CC 14 = ARPPEGIO SPEED
             if mm.values[0] == 12:
-                self.mqttc.publish('titreur/'+str(mm.channel())+'/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
-                print('titreur/'+str(mm.channel())+'/speed', str(mm.values[1]*10))
+                self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
+                print('k32/c'+str(mm.channel())+'/titre/speed', str(mm.values[1]*10))
 
             # CC 0 = Bank
             elif mm.values[0] == 0:
-                self.xls.bank(0, mm.values[1])
-                self.mqttc.publish('titreur/all/clear', payload="", qos=1, retain=False)
+                self.bank = mm.values[1]
+                self.mqttc.publish('k32/all/titre/clear', payload="", qos=1, retain=False)
                 print('bank', mm.values[1])
                 
             # CC 120 / 123 == ALL OFF
             if mm.values[0] == 120 or mm.values[0] == 123:
-                self.mqttc.publish('titreur/'+str(mm.channel())+'/clear', payload="", qos=1, retain=False)
-                print('titreur/'+str(mm.channel())+'/clear')
+                self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload="", qos=1, retain=False)
+                print('CC 120/127: k32/c'+str(mm.channel())+'/titre/clear')
 
 
     def stop(self):
         self.mqttc.loop_stop(True)
 
     def clear(self):
-        self.mqttc.publish('titreur/all/clear', payload="", qos=2, retain=False)
-        print('titreur/all/clear')
+        self.mqttc.publish('k32/all/titre/clear', payload="", qos=2, retain=False)
+        print('k32/all/titre/clear')

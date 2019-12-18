@@ -29,7 +29,7 @@ class Midi2SocketIO(object):
 
         # XLS Read and Parse
         self.xls = xls
-
+        self.bank = 0
         # MQTT input
         self.mqinput = MQTT2SocketIO(broker)
 
@@ -44,12 +44,13 @@ class Midi2SocketIO(object):
         msg = 'niet'
 
         if mm.maintype() == 'NOTEON':
-            txt = self.xls.note2txt_v1( 1, mm.note_abs(), mm.octave() )
+
+            txt = self.xls.getCell( -1, mm.octave(), max(1, 16*(self.bank)+1) + mm.note_abs() + 1 )
             if txt: 
                 msg = {'topic': '/add', 'payload': txt}
 
         elif mm.maintype() == 'NOTEOFF':
-            txt = self.xls.note2txt_v1( 1, mm.note_abs(), mm.octave() )
+            txt = self.xls.getCell( -1, mm.octave(), max(1, 16*(self.bank)+1) + mm.note_abs() + 1 )
             if txt:
                 msg = {'topic': '/rm', 'payload': txt}
 
@@ -61,7 +62,7 @@ class Midi2SocketIO(object):
 
             # CC 0 = Bank
             elif mm.values[0] == 0:
-                self.xls.bank(1, mm.values[1])
+                self.bank = mm.values[1]
                 print('bank', mm.values[1])
                 
             # CC 120 / 123 == ALL OFF

@@ -6,6 +6,7 @@ from interfaces import titreur
 from interfaces import webapp
 from interfaces import sampler
 from interfaces import leds
+from interfaces import osc
 from interfaces import xlsreader
 
 webappURL = 'https://live.beaucoupbeaucoup.art'
@@ -29,37 +30,25 @@ xls = xlsreader.XlsParser("MidiMapping.xls")
 # MIDI BRIDGES
 #
 
-midiMon        = midi.MidiInterface("K32-monitor", 
-                        midi.MidiMonitor() )
+midiMon        = midi.MidiInterface("K32-monitor", midi.MidiMonitor() )
 
+# midiLeds        = midi.MidiInterface("K32-leds", leds.Midi2MQTT( brokerIP ) )
+midiLeds        = midi.MidiInterface("K32-leds", leds.Midi2OSC( 9137, "2.255.255.255" ) )
 
-midiLeds        = midi.MidiInterface("K32-leds", 
-                        leds.Midi2MQTT( brokerIP ) )
+midiTitreur     = midi.MidiInterface( "KTitreur", titreur.Midi2MQTT( brokerIP , xls) )
 
-midiTitreur     = midi.MidiInterface( "KTitreur", 
-                        titreur.Midi2MQTT( brokerIP , xls) )
+midiWebapp      = midi.MidiInterface( "KWebapp", webapp.Midi2SocketIO( webappURL , xls, brokerIP) )
 
-midiWebapp      = midi.MidiInterface( "KWebapp", 
-                        webapp.Midi2SocketIO( webappURL , xls, brokerIP) )
-
-
-# midiSampler     = midi.MidiInterface("K32-sampler", 
-#                         sampler.Midi2MQTT( brokerIP ) )
+# midiSampler     = midi.MidiInterface("K32-sampler", sampler.Midi2MQTT( brokerIP ) )
 
 
 
 #
 # OSC
 #
-# oscIN           = osc.OscInterface(9037, brokerIP)
+# oscIN           = osc.OscInterface(9037, osc.Osc2MQTT(brokerIP))
 
-#
-# QT INTERFACE
-#
-# app = QtWidgets.QApplication([]) 
-# win = uic.loadUi("qt/interface.ui") #specify the location of your .ui file 
-# win.show()
-# sys.exit(app.exec())
+
 
 
 def signal_handler(sig, frame):

@@ -2,9 +2,11 @@ from interfaces import midi
 import paho.mqtt.client as mqtt
 import time
 from threading import Thread, Event
+import liblo
 
-FIXTURE_SIZE = 16
-FIXTURE_SIZEDMX = 12*4
+FIXTURE_SIZE = 32  # 512 / 16
+DIRTY_PUSH = 10 # number of re-push on dirty
+
 
 class UpdateLeds(Thread):
     def __init__(self, parent):
@@ -12,25 +14,20 @@ class UpdateLeds(Thread):
         self.parent = parent
 
     def run(self):
-        while not self.parent.stopFlag.wait(0.01):
-            self.parent.sendAll()
+        while not self.parent.stopFlag.wait(0.01):  # PUSH refresh
+            self.parent.push()
+
 
 #
-#  MIDI Handler (PUBLIC)
+#  MIDI Handler (Base class) 
 #
-class Midi2MQTT(object):
-    def __init__(self, broker):
+class Midi2Base(object):
+    def __init__(self):
         self._wallclock = time.time()
         
-        # MQTT Client
-        self.mqttc = mqtt.Client()
-        self.mqttc.connect(broker)
-        self.mqttc.loop_start()
-        print(f"-- LEDS: sending to broker at {broker}\n")
-
-        # Internal state
+        # Internal state for each channel
         self.payload = [0]*16
-        self.dirty = [False]*16
+        self.dirty = [0]*16
         self.clear()
 
         # Push state
@@ -46,23 +43,33 @@ class Midi2MQTT(object):
         
         if mm.maintype() == 'NOTEON' or mm.maintype() == 'CC' or mm.maintype() == 'NOTEOFF':
 
-            # NOTEON 0-15 or CC 20-35
+            # NOTEON = dmx channel // CC moins 20 = dmx channel
+
+            # CC shift -20
             note = mm.values[0]
             if mm.maintype() == 'CC':
-                note -= 20    
+                note -= 20
+
+            # Set new value
             if note >= 0:
-                if (note < FIXTURE_SIZE) or (mm._channel == 15 and note < FIXTURE_SIZEDMX):
-                    if mm.maintype() == 'NOTEOFF': 
-                        self.payload[mm._channel][note] = 0
+                if note < FIXTURE_SIZE:
+                    if mm.maintype() == 'NOTEOFF':
+                        if  self.payload[mm._channel][note] != 0:
+                            self.payload[mm._channel][note] = 0
+                            self.dirty[mm._channel] = DIRTY_PUSH
                     else: 
-                        self.payload[mm._channel][note] = mm.values[1]*2
-                    # self.send(mm._channel)
-                    self.dirty[mm._channel] = True
+                        if self.payload[mm._channel][note] != mm.values[1]*2:
+                            self.payload[mm._channel][note] = mm.values[1]*2
+                            self.dirty[mm._channel] = DIRTY_PUSH
+                
+                # CLEAR channel 
+                elif note == 127:
+                    self.payload[mm._channel] = bytearray(FIXTURE_SIZE)
+                    self.dirty[mm._channel] = DIRTY_PUSH
 
             # CC 119 / 120 / 123 == ALL OFF
             if mm.maintype() == 'CC' and (mm.values[0] == 120 or mm.values[0] == 119 or mm.values[0] == 123):
                 self.clear()
-                # self.send(mm._channel)   
                 self.dirty[mm._channel] = True
 
 
@@ -71,17 +78,55 @@ class Midi2MQTT(object):
         self.thread.join()
             
     def clear(self):
-        for i in range(15):
-            self.payload[i] = bytearray(FIXTURE_SIZE)
-        self.payload[15] = bytearray(FIXTURE_SIZEDMX)
-
-    def send(self, chan):
-        self.mqttc.publish('k32/c'+str(chan+1)+'/leds', payload=self.payload[chan], qos=1, retain=False)
-        print('k32/c'+str(chan+1)+'/leds', list(self.payload[chan]))
-
-    def sendAll(self):
         for i in range(16):
-            if self.dirty[i]:
-                self.dirty[i] = False
-                self.mqttc.publish('k32/c'+str(i+1)+'/leds', payload=self.payload[i], qos=1, retain=False)
-                print('k32/c'+str(i+1)+'/leds', list(self.payload[i]))
+            self.payload[i] = bytearray(FIXTURE_SIZE)
+
+    def push(self):
+        print('Base class.. nothing to do')
+
+    
+
+#
+#  MIDI Handler to MQTT
+#
+class Midi2MQTT(Midi2Base):
+    def __init__(self, broker):
+        # Init Midi handler
+        super().__init__()
+
+        # MQTT Client
+        self.mqttc = mqtt.Client()
+        self.mqttc.connect(broker)
+        self.mqttc.loop_start()
+        print(f"-- LEDS: sending to broker at {broker}\n")
+
+        
+    def push(self):
+        for i in range(16):
+            if self.dirty[i] > 0:
+                self.dirty[i] -= 1
+                dev = 'c'+str(i+1) if i < 15 else 'all'
+                self.mqttc.publish('k32/'+dev+'/leds/dmx', payload=self.payload[i], qos=1, retain=False)
+                print('k32/'+dev+'/leds/dmx', list(self.payload[i]))
+
+#
+#  MIDI Handler to MQTT
+#
+class Midi2OSC(Midi2Base):
+    def __init__(self, port, ip):
+        # Init Midi handler
+        super().__init__()
+
+        # OSC Client
+        self.port = port
+        self.ip = ip
+        print(f"-- LEDS: sending OSC on {ip} : {port}\n")
+
+        
+    def push(self):
+        for i in range(16):
+            if self.dirty[i] > 0:
+                self.dirty[i] -= 1
+                dev = 'c'+str(i+1) if i < 15 else 'all'
+                liblo.send( (self.ip, self.port), '/k32/'+dev+'/leds/dmx', self.payload[i] )
+                print('OSC send: k32/'+dev+'/leds/dmx', list(self.payload[i]))
