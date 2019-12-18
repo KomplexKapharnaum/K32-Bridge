@@ -62,11 +62,11 @@ class Midi2MQTT(object):
                     txt += '§' + getMode(txt)
 
                     if mm.maintype() == 'NOTEON':
-                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/add', payload=txt, qos=0, retain=False)
+                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=0, retain=False)   #add
                         print('k32/c'+str(mm.channel())+'/titre/add', txt)
 
                     elif mm.maintype() == 'NOTEOFF':
-                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/rm', payload=txt, qos=2, retain=False)
+                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload=txt, qos=2, retain=False) #rm
                         print('k32/c'+str(mm.channel())+'/titre/rm', txt)
 
             
