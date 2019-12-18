@@ -56,9 +56,14 @@ class Midi2MQTT(object):
             else:
                 txt = self.xls.getCell( self.bank, mm.channel()+1, mm.note()+2 )
                 if txt: 
-                    txt = txt.strip()
                     txt = txt.replace("\n", "/")
                     txt = txt.replace("\r", "")
+
+                    sub = txt.split("/")
+                    if len(sub) > 1:
+                        sub1 = ("_").join(sub[1:])
+                        txt = sub[0]+"/"+sub1
+
                     txt += '§' + getMode(txt)
 
                     if mm.maintype() == 'NOTEON':

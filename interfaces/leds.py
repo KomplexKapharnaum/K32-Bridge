@@ -128,5 +128,5 @@ class Midi2OSC(Midi2Base):
             if self.dirty[i] > 0:
                 self.dirty[i] -= 1
                 dev = 'c'+str(i+1) if i < 15 else 'all'
-                liblo.send( (self.ip, self.port), '/k32/'+dev+'/leds/dmx', self.payload[i] )
+                liblo.send( (self.ip, self.port), '/k32/'+dev+'/leds/dmx', list(self.payload[i]) )
                 print('OSC send: k32/'+dev+'/leds/dmx', list(self.payload[i]))
