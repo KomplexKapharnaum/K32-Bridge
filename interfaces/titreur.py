@@ -71,11 +71,11 @@ class Midi2MQTT(object):
 
                     if mm.maintype() == 'NOTEON':
                         self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=0, retain=False)   #add
-                        print('k32/c'+str(mm.channel())+'/titre/add', txt)
+                        print('k32/c'+str(mm.channel())+'/titre/text', txt)
 
                     elif mm.maintype() == 'NOTEOFF':
                         self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload=txt, qos=2, retain=False) #rm
-                        print('k32/c'+str(mm.channel())+'/titre/rm', txt)
+                        print('k32/c'+str(mm.channel())+'/titre/clear', txt)
 
             
 
@@ -83,8 +83,8 @@ class Midi2MQTT(object):
 
             # CC 14 = ARPPEGIO SPEED
             if mm.values[0] == 12:
-                self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
-                print('k32/c'+str(mm.channel())+'/titre/speed', str(mm.values[1]*10))
+                self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/speed', payload=str(128-mm.values[1]), qos=1, retain=False)
+                print('k32/c'+str(mm.channel())+'/titre/speed', str(128-mm.values[1]))
             
             # CC 0 = Bank
             elif mm.values[0] == 0:
