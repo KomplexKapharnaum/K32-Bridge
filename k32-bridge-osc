@@ -1,5 +1,8 @@
 #!/bin/bash
 cd "$(dirname "$0")"
+if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+  git pull
+fi
 
 # printf '\e[3;0;0t'
 # printf '\e[8;720;1280t'
@@ -8,4 +11,4 @@ cd "$(dirname "$0")"
 clear
 
 
-python3 main-osc.py $1
+python3 main-oscleds.py $1
