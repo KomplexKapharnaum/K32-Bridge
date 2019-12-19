@@ -103,7 +103,7 @@ class Midi2MQTT(Midi2Base):
     def push(self):
         for i in range(16):
             if self.dirty[i] > 0:
-                self.dirty[i] -= 1
+                self.dirty[i] = 0
                 dev = 'c'+str(i+1) if i < 15 else 'all'
                 self.mqttc.publish('k32/'+dev+'/leds/dmx', payload=self.payload[i], qos=1, retain=False)
                 print('k32/'+dev+'/leds/dmx', list(self.payload[i]))
