@@ -67,7 +67,7 @@ class Midi2MQTT(object):
                     if txt.endswith('/'):
                         txt += "_"
 
-                    txt += '§' + getMode(txt) + '§' + mm.values[1]
+                    txt += '§' + getMode(txt) + '§' + str(mm.values[1])
 
                     if mm.maintype() == 'NOTEON':
                         self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=0, retain=False)   #add
