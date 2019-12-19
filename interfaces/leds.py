@@ -53,9 +53,10 @@ class Midi2Base(object):
             if note >= 0:
                 if note < FIXTURE_SIZE:
                     if mm.maintype() == 'NOTEOFF':
-                        if  self.payload[mm._channel][note] != 0:
-                            self.payload[mm._channel][note] = 0
-                            self.dirty[mm._channel] = DIRTY_PUSH
+                        # if  self.payload[mm._channel][note] != 0:
+                        #     self.payload[mm._channel][note] = 0
+                        #     self.dirty[mm._channel] = DIRTY_PUSH
+                        pass
                     else: 
                         if self.payload[mm._channel][note] != mm.values[1]*2:
                             self.payload[mm._channel][note] = mm.values[1]*2
