@@ -67,7 +67,7 @@ class Midi2MQTT(object):
                     if txt.endswith('/'):
                         txt += "_"
 
-                    txt += '§' + getMode(txt)
+                    txt += '§' + getMode(txt) + '§' + mm.values[1]
 
                     if mm.maintype() == 'NOTEON':
                         self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=0, retain=False)   #add
@@ -85,7 +85,7 @@ class Midi2MQTT(object):
             if mm.values[0] == 12:
                 self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/speed', payload=str(mm.values[1]*10), qos=1, retain=False)
                 print('k32/c'+str(mm.channel())+'/titre/speed', str(mm.values[1]*10))
-
+            
             # CC 0 = Bank
             elif mm.values[0] == 0:
                 self.bank = mm.values[1]
