@@ -9,8 +9,8 @@ from interfaces import xlsreader
 # TITREUR MODE
 #
 def getMode(txt):
-    if "\n" in txt:
-        if len(txt.split("\n")[1]) < 25: return 'NO_SCROLL_NORMAL'
+    if ';' in txt:
+        if len(txt.split(';')[1]) < 25: return 'NO_SCROLL_NORMAL'
         else: return 'SCROLL_LOOP_NORMAL'
     else:
         if len(txt) < 13: return 'NO_SCROLL_BIG'
@@ -56,15 +56,15 @@ class Midi2MQTT(object):
             else:
                 txt = self.xls.getCell( self.bank, mm.channel()+1, mm.note()+2 )
                 if txt: 
-                    # txt = txt.replace("\n", "/")
+                    txt = txt.replace("\n", ";")
                     txt = txt.replace("\r", "")
 
-                    sub = txt.split("\n")
+                    sub = txt.split(";")
                     if len(sub) > 1:
                         sub1 = ("_").join(sub[1:])
-                        txt = sub[0]+"/"+sub1
+                        txt = sub[0]+";"+sub1
 
-                    if txt.endswith("\n"):
+                    if txt.endswith(';'):
                         txt += "_"
 
                     txt += '§' + getMode(txt) + '§' + str(mm.values[1])
