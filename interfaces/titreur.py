@@ -2,7 +2,6 @@ import time, signal, sys, os
 import paho.mqtt.client as mqtt
 from interfaces import midi
 from interfaces import xlsreader
-import base64
 
 # DEVICES = ['2.0.11.44', '2.0.11.45', '2.0.11.48', '2.0.11.50', '2.0.11.51', '2.0.11.52', '2.0.11.54']
 
@@ -70,14 +69,12 @@ class Midi2MQTT(object):
 
                     txt += '§' + getMode(txt) + '§' + str(mm.values[1])
 
-                    txtEnc = base64.b64encode(txt)
-
                     if mm.maintype() == 'NOTEON':
-                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txtEnc, qos=1, retain=False)   #add
+                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=1, retain=False)   #add
                         print('k32/c'+str(mm.channel())+'/titre/text', txt)
 
                     elif mm.maintype() == 'NOTEOFF':
-                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload=txtEnc, qos=2, retain=False) #rm
+                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload=txt, qos=2, retain=False) #rm
                         print('k32/c'+str(mm.channel())+'/titre/clear', txt)
 
             
