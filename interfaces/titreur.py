@@ -10,8 +10,9 @@ from interfaces import xlsreader
 #
 def getMode(txt):
     if ';' in txt:
-        if len(txt.split(';')[1]) < 25: return 'NO_SCROLL_NORMAL'
-        else: return 'SCROLL_LOOP_NORMAL'
+        if len(txt.split(';')[0]) > 24: return 'SCROLL_LOOP_NORMAL'
+        elif len(txt.split(';')[1]) > 24: return 'SCROLL_LOOP_NORMAL'
+        else: return 'NO_SCROLL_NORMAL'
     else:
         if len(txt) < 13: return 'NO_SCROLL_BIG'
         else: return 'SCROLL_LOOP_BIG'
