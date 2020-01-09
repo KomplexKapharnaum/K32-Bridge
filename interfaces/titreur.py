@@ -9,7 +9,7 @@ from interfaces import xlsreader
 # TITREUR MODE
 #
 def getMode(txt):
-    if '/' in txt:
+    if "\n" in txt:
         if len(txt.split("\n")[1]) < 25: return 'NO_SCROLL_NORMAL'
         else: return 'SCROLL_LOOP_NORMAL'
     else:
