@@ -70,7 +70,7 @@ class Midi2MQTT(object):
 
                     txt += '§' + getMode(txt) + '§' + str(mm.values[1])
 
-                    txtEnc = base64.b64encode(txt.encode("utf-8"))
+                    txtEnc = base64.b64encode(txt)
 
                     if mm.maintype() == 'NOTEON':
                         self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txtEnc, qos=1, retain=False)   #add
