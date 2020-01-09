@@ -10,7 +10,7 @@ from interfaces import xlsreader
 #
 def getMode(txt):
     if '/' in txt:
-        if len(txt.split('/')[1]) < 25: return 'NO_SCROLL_NORMAL'
+        if len(txt.split("\n")[1]) < 25: return 'NO_SCROLL_NORMAL'
         else: return 'SCROLL_LOOP_NORMAL'
     else:
         if len(txt) < 13: return 'NO_SCROLL_BIG'
