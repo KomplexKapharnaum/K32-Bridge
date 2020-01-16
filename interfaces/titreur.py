@@ -34,7 +34,7 @@ class Midi2MQTT(object):
         # XLS Read and Parse
         self.xls = xls
 
-        self.bank = [0] * 16
+        self.bank = [0] * 17
 
         print("")
 
