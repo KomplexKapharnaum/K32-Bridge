@@ -16,8 +16,8 @@ print("KTITREUR - Midi Bridge\n")
 
 
 if len(sys.argv) < 2:
-        print('no broker specified, default to 2.0.0.1')
-        brokerIP = "2.0.0.1"
+        print('no broker specified, default to 10.0.0.1')
+        brokerIP = "10.0.0.1"
 else : 
         brokerIP = sys.argv[1]
 
