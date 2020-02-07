@@ -8,7 +8,7 @@ fi
 # printf '\e[8;720;1280t'
 # printf '\e[9;1t'
 # printf '\e[5t'
-# clear
+clear
 
 
-python3 main.py $1
+python3 main-oscleds.py $1

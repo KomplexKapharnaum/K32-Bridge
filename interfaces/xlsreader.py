@@ -13,7 +13,6 @@ class XlsParser():
         self.path = path
         self.parent = parent
         self.workbook = xlrd.open_workbook(self.path)
-        self.worksheet = [self.workbook.sheet_by_index(0), self.workbook.sheet_by_index(1)]
 
         print(f"-- XLS: file loaded {path}")
 
@@ -30,14 +29,14 @@ class XlsParser():
             sheet = len(self.workbook.sheet_names())-1  # last sheet
         if (colx >= 0): 
             if sheet >= 0 and sheet < len(self.workbook.sheet_names()):
-                if rowx in range(self.worksheet[sheet].nrows):
-                    value = self.worksheet[sheet].cell_value( rowx, colx )
+                worksheet = self.workbook.sheet_by_index(sheet)
+                if rowx in range(worksheet.nrows):
+                    value = worksheet.cell_value( rowx, colx )
         return value
 
     def reload(self):
         self.workbook.release_resources()
         self.workbook = xlrd.open_workbook(self.path)
-        self.worksheet = [self.workbook.sheet_by_index(0), self.workbook.sheet_by_index(1)]
 
     
 #

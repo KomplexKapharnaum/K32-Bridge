@@ -34,7 +34,7 @@ class Midi2MQTT(object):
         # XLS Read and Parse
         self.xls = xls
 
-        self.bank = 0
+        self.bank = [0] * 17
 
         print("")
 
@@ -55,7 +55,7 @@ class Midi2MQTT(object):
 
             # NOTES TXT from XLS
             else:
-                txt = self.xls.getCell( self.bank, mm.channel()+1, mm.note()+2 )
+                txt = self.xls.getCell( self.bank[mm.channel()], mm.channel()+1, mm.note()+2 )
                 if txt: 
                     txt = txt.replace("\n", ";")
                     txt = txt.replace("\r", "")
@@ -71,12 +71,16 @@ class Midi2MQTT(object):
                     txt += '§' + getMode(txt) + '§' + str(mm.values[1])
 
                     if mm.maintype() == 'NOTEON':
-                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=0, retain=False)   #add
-                        print('k32/c'+str(mm.channel())+'/titre/text', txt)
+                        if mm.values[1] > 1:
+                            self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/text', payload=txt, qos=0, retain=False)   #add
+                            print('k32/c'+str(mm.channel())+'/titre/text', txt)
+                        else:
+                            self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload='', qos=0, retain=False)   #add
+                            print('k32/c'+str(mm.channel())+'/titre/clear')
 
-                    elif mm.maintype() == 'NOTEOFF':
-                        self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload=txt, qos=0, retain=False) #rm
-                        print('k32/c'+str(mm.channel())+'/titre/clear', txt)
+                    #elif mm.maintype() == 'NOTEOFF':
+                    #    self.mqttc.publish('k32/c'+str(mm.channel())+'/titre/clear', payload=txt, qos=0, retain=False) #rm
+                    #    print('k32/c'+str(mm.channel())+'/titre/clear', txt)
 
             
 
@@ -89,7 +93,7 @@ class Midi2MQTT(object):
             
             # CC 0 = Bank
             elif mm.values[0] == 0:
-                self.bank = mm.values[1]
+                self.bank[mm.channel()] = mm.values[1]
                 self.mqttc.publish('k32/all/titre/clear', payload="", qos=1, retain=False)
                 print('bank', mm.values[1])
                 
