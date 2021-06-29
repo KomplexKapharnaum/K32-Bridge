@@ -37,7 +37,7 @@ midiLeds        = midi.MidiInterface("K32-leds", leds.Midi2MQTT( brokerIP ) )
 
 midiTitreur     = midi.MidiInterface( "KTitreur", titreur.Midi2MQTT( brokerIP , xls) )
 
-midiWebapp      = midi.MidiInterface( "KWebapp", webapp.Midi2SocketIO( webappURL , xls, brokerIP) )
+# midiWebapp      = midi.MidiInterface( "KWebapp", webapp.Midi2SocketIO( webappURL , xls, brokerIP) )
 
 # midiSampler     = midi.MidiInterface("K32-sampler", sampler.Midi2MQTT( brokerIP ) )
 
