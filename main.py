@@ -6,6 +6,7 @@ from interfaces import titreur
 from interfaces import webapp
 from interfaces import sampler
 from interfaces import leds
+from interfaces import elp
 from interfaces import osc
 from interfaces import xlsreader
 
@@ -41,6 +42,7 @@ midiTitreur     = midi.MidiInterface( "KTitreur", titreur.Midi2MQTT( brokerIP , 
 
 # midiSampler     = midi.MidiInterface("K32-sampler", sampler.Midi2MQTT( brokerIP ) )
 
+midiELP        = midi.MidiInterface("K32-elp", elp.Midi2MQTT( brokerIP ) )
 
 
 #
