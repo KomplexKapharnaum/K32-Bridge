@@ -4,7 +4,7 @@ import time
 from threading import Thread, Event
 import liblo
 
-FIXTURE_SIZE = 32  # 512 / 16
+FIXTURE_SIZE = 20  # 512 / 16
 DIRTY_PUSH = 5 # number of re-push on dirty
 
 class UpdateLeds(Thread):
